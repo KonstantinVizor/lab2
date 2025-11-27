@@ -25,6 +25,7 @@ jobs:
           docker save loyalty:latest > loyalty_build.tar
           docker save payment:latest > payment_build.tar
           docker save reservation:latest > reservation_build.tar
+          zip test.zip *_build.tar
       - name: build backend
         run: |
           docker build -t loaylty:latest -f ./loyalty.dockerfile . --target=release
@@ -35,14 +36,15 @@ jobs:
           docker save payment:latest > payment_release.tar
           docker save reservation:latest > reservation_release.tar
           docker save gateway:latest > gateway_release.tar
+          zip release.zip *_release.tar
       - uses: actions/upload-artifact@v4 
         with: 
           name: tests-artefact 
-          path: *_build.tar
+          path: test.zip
       - uses: actions/upload-artifact@v4 
         with: 
           name: backend-artefact 
-          path: *_release.tar
+          path: release.zip
 
   test:
     name: test
@@ -57,6 +59,7 @@ jobs:
           name: tests-artefact 
       - name: run tests
         run: |
+          unzip test.zip
           docker load < loyalty_build.tar
           docker load < payment_build.tar
           docker load < reservation_build.tar
@@ -67,7 +70,6 @@ jobs:
           else
             echo "TESTS_STATUS=failed" >> $GITHUB_ENV
           fi
-
   deploy:
     name: run
     runs-on: ubuntu-latest
@@ -81,6 +83,7 @@ jobs:
           name: backend-artefact 
       - name: Run
         run: |
+          unzip release.zip
           docker load < loyalty_release.tar
           docker load < payment_release.tar
           docker load < reservation_release.tar
