@@ -10,8 +10,8 @@ on:
       - develop
 
 jobs:
-  build:
-    name: build
+  build-layout:
+    name: build layout
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -20,72 +20,172 @@ jobs:
       - name: build tests
         run: |
           docker build -t loyalty:latest -f ./loyalty.dockerfile . --target=build
-          docker build -t payment:latest -f ./payment.dockerfile . --target=build
-          docker build -t reservation:latest -f ./reservation.dockerfile . --target=build
           docker save loyalty:latest > loyalty_build.tar
-          docker save payment:latest > payment_build.tar
-          docker save reservation:latest > reservation_build.tar
-          zip test.zip *_build.tar
-          rm loyalty_build.tar payment_build.tar reservation_build.tar
       - name: build backend
         run: |
           docker build -t loaylty:latest -f ./loyalty.dockerfile . --target=release
-          docker build -t payment:latest -f ./payment.dockerfile . --target=release
-          docker build -t reservation:latest -f ./reservation.dockerfile . --target=release
-          docker build -t gateway:latest -f ./gateway.dockerfile . --target=release
           docker save loyalty:latest > loyalty_release.tar
-          docker save payment:latest > payment_release.tar
-          docker save reservation:latest > reservation_release.tar
-          docker save gateway:latest > gateway_release.tar
-          zip release.zip *_release.tar
-          rm loyalty_release.tar payment_release.tar reservation_release.tar gateway_release.tar
       - uses: actions/upload-artifact@v4 
         with: 
-          name: tests-artefact 
-          path: test.zip
+          name: tests-loyalty-artefact 
+          path: loyalty_build.tar
       - uses: actions/upload-artifact@v4 
         with: 
-          name: backend-artefact 
-          path: release.zip
+          name: backend-loyalty-artefact 
+          path: loyalty_release.tar
 
-  test:
+  build-payment:
+    name: build payment
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: build tests
+        run: |
+          docker build -t payment:latest -f ./payment.dockerfile . --target=build
+          docker save payment:latest > payment_build.tar
+      - name: build backend
+        run: |
+          docker build -t payment:latest -f ./payment.dockerfile . --target=release
+          docker save payment:latest > payment_release.tar
+      - uses: actions/upload-artifact@v4 
+        with: 
+          name: tests-payment-artefact 
+          path: payment_build.tar
+      - uses: actions/upload-artifact@v4 
+        with: 
+          name: backend-payment-artefact 
+          path: payment_release.tar
+
+  build-reservation:
+    name: build reservation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: build tests
+        run: |
+          docker build -t reservation:latest -f ./reservation.dockerfile . --target=build
+          docker save reservation:latest > reservation_build.tar
+      - name: build backend
+        run: |
+          docker build -t reservation:latest -f ./reservation.dockerfile . --target=release
+          docker save reservation:latest > reservation_release.tar
+      - uses: actions/upload-artifact@v4 
+        with: 
+          name: tests-reservation-artefact 
+          path: reservation_build.tar
+      - uses: actions/upload-artifact@v4 
+        with: 
+          name: backend-resevation-artefact 
+          path: reservation_release.tar
+
+  build-gateway:
+    name: build gateway
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: build backend
+        run: |
+          docker build -t gateway:latest -f ./gateway.dockerfile . --target=release
+          docker save gateway:latest > gateway_release.tar
+      - uses: actions/upload-artifact@v4 
+        with: 
+          name: backend-gateway-artefact 
+          path: gateway_release.tar
+
+  test-loyalty:
     name: test
     runs-on: ubuntu-latest
-    needs: build
+    needs: build-loyalty
     steps:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
       - uses: actions/download-artifact@v4
         with: 
-          name: tests-artefact 
+          name: tests-loyalty-artefact 
       - name: run tests
         run: |
-          unzip test.zip
           docker load < loyalty_build.tar
-          docker load < payment_build.tar
-          docker load < reservation_build.tar
-          docker compose -f ./docker-compose.tests.yml up
+          docker compose -f ./docker-compose.tests.yml up loyalty_tests
           if [[ 0 == $? ]]
           then
             echo "TESTS_STATUS=success" >> $GITHUB_ENV
           else
             echo "TESTS_STATUS=failed" >> $GITHUB_ENV
           fi
-  run:
-    name: run
+
+  test-payment:
+    name: test
     runs-on: ubuntu-latest
-    needs: test
+    needs: build-payment
     steps:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
       - uses: actions/download-artifact@v4
         with: 
-          name: backend-artefact 
+          name: tests-payment-artefact 
+      - name: run tests
+        run: |
+          docker load < payment_build.tar
+          docker compose -f ./docker-compose.tests.yml up payment_tests
+          if [[ 0 == $? ]]
+          then
+            echo "TESTS_STATUS=success" >> $GITHUB_ENV
+          else
+            echo "TESTS_STATUS=failed" >> $GITHUB_ENV
+          fi
+
+  test-reservation:
+    name: test
+    runs-on: ubuntu-latest
+    needs: build-reservation
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - uses: actions/download-artifact@v4
+        with: 
+          name: tests-reservation-artefact 
+      - name: run tests
+        run: |
+          docker load < reservation_build.tar
+          docker compose -f ./docker-compose.tests.yml up reservation_tests
+          if [[ 0 == $? ]]
+          then
+            echo "TESTS_STATUS=success" >> $GITHUB_ENV
+          else
+            echo "TESTS_STATUS=failed" >> $GITHUB_ENV
+          fi
+
+  run:
+    name: run
+    runs-on: ubuntu-latest
+    needs: [test-loyalty, test-payment, test-reservation]
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - uses: actions/download-artifact@v4
+        with: 
+          name: backend-loyalty-artefact 
+      - uses: actions/download-artifact@v4
+        with: 
+          name: backend-payment-artefact 
+      - uses: actions/download-artifact@v4
+        with: 
+          name: backend-reservation-artefact 
+      - uses: actions/download-artifact@v4
+        with: 
+          name: backend-gateway-artefact 
       - name: Run
         run: |
-          unzip release.zip
           docker load < loyalty_release.tar
           docker load < payment_release.tar
           docker load < reservation_release.tar
