@@ -10,8 +10,8 @@ on:
       - develop
 
 jobs:
-  build-layout:
-    name: build layout
+  build-loyalty:
+    name: build loyalty
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
