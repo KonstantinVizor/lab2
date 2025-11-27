@@ -861,7 +861,7 @@
 		},
 		{
 			"key": "hotelPrice",
-			"value": ""
+			"value": "10000"
 		},
 		{
 			"key": "reservationUid",

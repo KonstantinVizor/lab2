@@ -1,0 +1,28 @@
+services:
+  loyalty_tests:
+    image: loyalty_tests:latest
+    build:
+      context: .
+      dockerfile: ./loyalty.dockerfile
+      target: build
+    command: bash -c "cd /app/build; ctest --output-on-failure"
+    volumes:
+      - ./testLogs/loyalty:/app/build/Testing/Temporary
+  reservation_tests:
+    image: reservation_tests:latest
+    build:
+      context: .
+      dockerfile: ./reservation.dockerfile
+      target: build
+    command: bash -c "cd /app/build; ctest --output-on-failure"
+    volumes:
+      - ./testLogs/reservation:/app/build/Testing/Temporary
+  payment_tests:
+    image: payment_tests:latest
+    build:
+      context: .
+      dockerfile: ./payment.dockerfile
+      target: build
+    command: bash -c "cd /app/build; ctest --output-on-failure"
+    volumes:
+      - ./testLogs/payment:/app/build/Testing/Temporary

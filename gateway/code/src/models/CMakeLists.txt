@@ -1,0 +1,1 @@
+add_library(models SHARED  ./PaymentModel.cpp ./CreateReservationRequest.cpp ./CreateReservationResponse.cpp ./HotelInfo.cpp ./HotelResponce.cpp ./LoyaltyInfo.cpp ./LoyaltyModel.cpp ./PaginationResponce.cpp ./PaymentInfo.cpp ./ReservationModel.cpp ./ReservationResponse.cpp ./ReservationWithHotel.cpp ./UserInfoResponse.cpp)

@@ -1,0 +1,1 @@
+add_library(controllers SHARED ./DefaultController.cpp ./HotelGetAllController.cpp ./LoyaltyGetByUsernameController.cpp ./MeGetByUsernameController.cpp ./ReservationCreateByUsernameController.cpp ./ReservationDeleteByUsernameNUidController.cpp ./ReservationGetByUsernameController.cpp ./ReservationGetByUsernameNUidController.cpp)

@@ -1,4 +1,3 @@
-version: "3"
 services:
   postgres:
     image: library/postgres:13
@@ -8,13 +7,80 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: "postgres"
       POSTGRES_DB: postgres
+    healthcheck:
+      test: bash -c "pg_isready -U postgres -d postgres"
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
     volumes:
-      - db-data:/var/lib/postgresql/data
+      - ./pg-data:/var/lib/postgresql/data
       - ./postgres/:/docker-entrypoint-initdb.d/
+    networks:
+      - backend
     ports:
-      - "5432:5432"
+      - 5432:5432
 
-# TODO добавить сервисы
+  gateway_service:
+    image: gateway:latest
+    build:
+      context: .
+      dockerfile: ./gateway.dockerfile
+      target: release
+    container_name: gateway
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - backend
+    command: "/app/bin/gateway"
+    ports:
+      - 8080:8080
 
-volumes:
-  db-data:
+  payment_service:
+    image: payment:latest
+    build:
+      context: .
+      dockerfile: ./payment.dockerfile
+      target: release
+    container_name: payment
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - backend
+    command: "/app/bin/payment"
+
+  loyalty_service:
+    image: loyalty:latest
+    build:
+      context: .
+      dockerfile: ./loyalty.dockerfile
+      target: release
+    container_name: loyalty
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - backend
+    command: "/app/bin/loyalty"
+
+  reservation_service:
+    image: reservation:latest
+    build:
+      context: .
+      dockerfile: ./reservation.dockerfile
+      target: release
+    container_name: reservation
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - backend
+    command: "/app/bin/reservation"
+    ports:
+      - 6789:8080
+
+networks:
+  backend:
+    driver: bridge

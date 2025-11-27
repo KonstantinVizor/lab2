@@ -1,0 +1,5 @@
+include_directories(${CMAKE_SOURCE_DIR}/code/libPoco)
+add_executable(loyalty main.cpp)
+add_subdirectory(./src)
+add_subdirectory(./tests)
+target_link_libraries(loyalty app)
