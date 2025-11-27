@@ -189,7 +189,7 @@ jobs:
           docker load < loyalty_release.tar
           docker load < payment_release.tar
           docker load < reservation_release.tar
-          docker compose -f ./docker-compose.yml up
+          docker compose -f ./docker-compose.yml up -d
 
   integration-tests:
     name: Autograding
