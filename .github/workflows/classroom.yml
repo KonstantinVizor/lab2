@@ -65,7 +65,7 @@ jobs:
           docker load < loyalty_build.tar
           docker load < payment_build.tar
           docker load < reservation_build.tar
-          docker compose -f ./docker-compose.tests.yml up --exit-code-from tests
+          docker compose -f ./docker-compose.tests.yml up
           if [[ 0 == $? ]]
           then
             echo "TESTS_STATUS=success" >> $GITHUB_ENV
