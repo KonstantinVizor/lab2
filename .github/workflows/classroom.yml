@@ -19,7 +19,7 @@ jobs:
           fetch-depth: 0
       - name: build tests
         run: |
-          docker build -t loaylty:latest -f ./loyalty.dockerfile . --target=build
+          docker build -t loyalty:latest -f ./loyalty.dockerfile . --target=build
           docker build -t payment:latest -f ./payment.dockerfile . --target=build
           docker build -t reservation:latest -f ./reservation.dockerfile . --target=build
           docker save loyalty:latest > loyalty_build.tar
