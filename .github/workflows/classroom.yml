@@ -26,6 +26,7 @@ jobs:
           docker save payment:latest > payment_build.tar
           docker save reservation:latest > reservation_build.tar
           zip test.zip *_build.tar
+          rm loyalty_build.tar payment_build.tar reservation_build.tar
       - name: build backend
         run: |
           docker build -t loaylty:latest -f ./loyalty.dockerfile . --target=release
@@ -37,6 +38,7 @@ jobs:
           docker save reservation:latest > reservation_release.tar
           docker save gateway:latest > gateway_release.tar
           zip release.zip *_release.tar
+          rm loyalty_release.tar payment_release.tar reservation_release.tar gateway_release.tar
       - uses: actions/upload-artifact@v4 
         with: 
           name: tests-artefact 
