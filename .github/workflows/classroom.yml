@@ -167,7 +167,7 @@ jobs:
   integration-tests:
     name: Autograding
     runs-on: ubuntu-latest
-    needs: [build-gateway, test-layout, test-payment, test-reservation]
+    needs: [build-gateway, test-loyalty, test-payment, test-reservation]
     steps:
       - uses: actions/checkout@v3
         with:
